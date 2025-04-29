@@ -14,29 +14,22 @@ class PatchEmbedder(nn.Module):
 
     def forward(self, x):
         assert x.shape[1] == 1, "This implementation assumes single channel greyscale image 0-255"
-        print(f"x.shape:{x.shape} (batch_size, channels=1, height, width)")
 
         #convert to floats and rescale to 0-1
-        print(x.min(), x.max(), x.mean())
         x = x.float() / 255.0
-        print(x.min(), x.max(), x.mean())
 
         #normalise so they are not so dark
         mnist_std = 0.3081
         mnist_mean = 0.1307
         x = (x - mnist_mean) / mnist_std
-        print(x.min(), x.max(), x.mean())
 
         #Patching        
         x = self.unfold(x)
-        print(f"x.shape:{x.shape} (batch_size, patch_dim, num_patches)")
 
         x = x.transpose(1, 2)
-        print(f"x.shape:{x.shape} (batch_size, num_patches, patch_dim)")
         
         #Linear Layer
         x = self.linear(x)
-        print(f"x.shape:{x.shape} (batch_size, num_patches, output_dimension)")
 
         return x
 

@@ -2,41 +2,36 @@ from PatchEmbedder import *
 from TransformerBlock import *
 from ClassifierHead import *
 
-class VisualTransformer():
+class VisualTransformer(nn.Module):
     def __init__(self,patch_size, embedding_size, num_classes) -> None:
         super().__init__()
 
-        self.pipeline = nn.Sequential(
-            PatchEmbedder(patch_size, embedding_size),
-            TransformerBlock(embedding_size),
-            TransformerBlock(embedding_size),
-            ClassifierHead(embedding_size,num_classes))
+        self.patch_embedder = PatchEmbedder(patch_size, embedding_size)
+        self.cls_token = nn.Parameter(torch.zeros(1, 1, embedding_size))
+        self.transformer1 = TransformerBlock(embedding_size)
+        self.transformer2 = TransformerBlock(embedding_size)
+        self.classifier_head = ClassifierHead(embedding_size, num_classes)
         
     def forward(self, x):
-        return self.pipeline(x)
+        x = self.patch_embedder(x)   # x: [batch_size, num_patches, embedding_size]
 
+        batch_size = x.shape[0]
 
-'''
-This is what I 'm going to build
+        # Expand cls_token across batch dimension
+        cls_tokens = self.cls_token.expand(batch_size, -1, -1)  # [batch_size, 1, embedding_size]
 
-patch_embedder = PatchEmbedder(...)
-transformer_block1 = TransformerBlock(...)
-transformer_block2 = TransformerBlock(...)
-...
-classifier = ClassifierHead(...)
+        # Prepend CLS token
+        x = torch.cat((cls_tokens, x), dim=1)  # x: [batch_size, num_patches+1, embedding_size]
 
-x image [28,28]
-x = patch_embedder(x) #patch + linear layer
-x [nP*64] where nP is the number of patches
-x = transformer_block1(x)
+        # Forward through Transformer(s)
+        x = self.transformer1(x)
+        x = self.transformer2(x)
 
-x [nP*64]
-x = transformer_block2(x)
+        # Take only the CLS token
+        cls_output = x[:, 0, :]  # shape: [batch_size, embedding_size]
 
-x [nP*64]
+        # Classify
+        logits = self.classifier_head(cls_output)
 
-x = classifier(x)
-x [nC] where nC is the numbe of classes (labels)
-
-'''
+        return logits
 

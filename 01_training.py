@@ -2,27 +2,11 @@ import wandb
 import torch
 import datetime
 import torch
-import torch.nn.functional as F
-from torch import nn
-from torch.utils.data import DataLoader
 import wandb
-import random
-import numpy as np
-from tqdm import tqdm
 import torch
-import torch.nn.functional as F
-from torch.nn import TripletMarginLoss
 import dataset
 from VisualTransformer import *
 from classifier_training import *
-
-def set_seed(seed=42):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
 
 set_seed()
 
@@ -31,6 +15,8 @@ ts = datetime.datetime.now().strftime('%Y_%m_%d__%H_%M_%S')
 
 hyperparameters = {
         'patch_size':7,
+        'embedding_size':64,
+        'num_classes':10,
         'learning_rate': 2e-5,
         'weight_decay': 0.01,
         'batch_size': 512,
@@ -53,8 +39,9 @@ sweep_config = {
         'weight_decay': {
             'values': [0.01] #[0.01, 0.001
         },
-        'patch_size':[7,14]
-        
+        'patch_size': {
+            'values': [7,14]
+        }
     }
 }
 
@@ -97,7 +84,7 @@ def train():
 
         patience= hyperparameters['patience']
 
-        for epoch in tqdm(range(1, hyperparameters['num_epochs'] + 1)):
+        for epoch in range(1, hyperparameters['num_epochs'] + 1):
             step = train_one_epoch(model, train_loader, optimizer, device, epoch, step_offset=step)
             val_loss = evaluate(model, val_loader, device, epoch=epoch, step=step)
 

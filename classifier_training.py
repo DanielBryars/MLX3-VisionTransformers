@@ -1,8 +1,18 @@
 import wandb
 import torch
 import os 
-import tqdm
+from tqdm import tqdm 
 import torch.nn.functional as F
+import random
+import numpy as np
+
+def set_seed(seed=42):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 def evaluate(model, dataloader, device, epoch=None, step=None):
     model.eval()
@@ -36,6 +46,7 @@ def train_one_epoch(model, dataloader, optimizer, device, epoch, step_offset=0):
         images, labels = [x.to(device) for x in batch]
 
         logits = model(images)
+
         loss = F.cross_entropy(logits, labels)
 
         optimizer.zero_grad()

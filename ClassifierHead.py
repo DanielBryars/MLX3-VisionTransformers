@@ -1,7 +1,5 @@
 from dataset import *
 import torch.nn as nn
-import torch.nn.functional as F
-import torch.nn.init as init
 from weights import * 
 
 class ClassifierHead(nn.Module):

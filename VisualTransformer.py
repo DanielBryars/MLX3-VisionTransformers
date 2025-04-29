@@ -2,19 +2,18 @@ from PatchEmbedder import *
 from TransformerBlock import *
 from ClassifierHead import *
 
-class PipelineFactory():
-    def create(patch_size = 7, embedding_size= 64, num_classes = 10):
+class VisualTransformer():
+    def __init__(self,patch_size, embedding_size, num_classes) -> None:
+        super().__init__()
 
-        sequential = nn.Sequential(
+        self.pipeline = nn.Sequential(
             PatchEmbedder(patch_size, embedding_size),
             TransformerBlock(embedding_size),
             TransformerBlock(embedding_size),
             ClassifierHead(embedding_size,num_classes))
         
-        return sequential            
-
-            
-
+    def forward(self, x):
+        return self.pipeline(x)
 
 
 '''

@@ -1,14 +1,11 @@
 import wandb
 import torch
 import datetime
-import model
 import torch
 import torch.nn.functional as F
 from torch import nn
 from torch.utils.data import DataLoader
 import wandb
-import time
-import os
 import random
 import numpy as np
 from tqdm import tqdm
@@ -16,7 +13,8 @@ import torch
 import torch.nn.functional as F
 from torch.nn import TripletMarginLoss
 import dataset
-from Pipeline import *
+from VisualTransformer import *
+from classifier_training import *
 
 def set_seed(seed=42):
     random.seed(seed)
@@ -32,6 +30,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 ts = datetime.datetime.now().strftime('%Y_%m_%d__%H_%M_%S')
 
 hyperparameters = {
+        'patch_size':7,
         'learning_rate': 2e-5,
         'weight_decay': 0.01,
         'batch_size': 512,
@@ -59,28 +58,6 @@ sweep_config = {
     }
 }
 
-
-def train_one_epoch(daModel, dataloader, optimizer, device, epoch, loss_fn, step_offset=0):
-    daModel.train()
-    step = step_offset
-
-    loop = tqdm(dataloader, desc=f"Epoch {epoch} [Train]", leave=False)
-    for batch in loop:
-        image_patch = [x.to(device) for x in batch]
-
-        #how to calculate the loss
-        loss = loss_fn(query_emb, pos_doc_emb, neg_doc_emb)
-
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-
-        wandb.log({'train/loss': loss.item()}, step=step)
-        loop.set_postfix(loss=loss.item())
-        step += 1
-
-    return step
-
 def train():
     with wandb.init(config=hyperparameters):
         
@@ -98,17 +75,18 @@ def train():
         val_dataset = dataset.mnist_test #use test for validation right now
         val_loader = torch.utils.data.DataLoader(dataset=val_dataset, batch_size=hyperparameters['batch_size'])
 
-        transformer_model = PipelineFactory().create(
+        model = VisualTransformer(
             patch_size = hyperparameters['patch_size'], 
-            embedding_size= hyperparameters['embedding_size'], 
-            num_classes = hyperparameters['num_classes'])
+            embedding_size = hyperparameters['embedding_size'], 
+            num_classes = hyperparameters['num_classes']
+        )
 
-        transformer_model.to(device)
-        
-        print('transformer_model:params', sum(p.numel() for p in transformer_model.parameters()))
+        model.to(device)
+
+        print('model:params', sum(p.numel() for p in model.parameters()))
         
         optimizer = torch.optim.Adam(
-            transformer_model.parameters(), 
+            model.parameters(), 
             lr=hyperparameters['learning_rate'], 
             weight_decay=hyperparameters['weight_decay']
         )
@@ -119,16 +97,16 @@ def train():
 
         patience= hyperparameters['patience']
 
-        for epoch in range(1, hyperparameters['num_epochs'] + 1):
-            step = train_one_epoch(queryModel, docModel, train_loader, optimizer, device, epoch, loss_fn, step_offset=step)
-            val_loss = evaluate(queryModel, docModel, val_loader, device, loss_fn, epoch=epoch, step=step)
+        for epoch in tqdm(range(1, hyperparameters['num_epochs'] + 1)):
+            step = train_one_epoch(model, train_loader, optimizer, device, epoch, step_offset=step)
+            val_loss = evaluate(model, val_loader, device, epoch=epoch, step=step)
 
             print(f"Epoch {epoch} complete | Val Loss: {val_loss:.4f}")
 
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
                 epochs_no_improve = 0
-                save_checkpoint(queryModel, docModel, epoch, ts)
+                save_checkpoint(model, epoch, ts)
             else:
                 epochs_no_improve += 1
                 print(f"No improvement. Early stop patience: {epochs_no_improve}/{patience}")

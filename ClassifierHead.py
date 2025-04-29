@@ -1,4 +1,3 @@
-from model import *
 from dataset import *
 import torch.nn as nn
 import torch.nn.functional as F
@@ -22,8 +21,7 @@ class ClassifierHead(nn.Module):
             nn.GELU(),
             #Hidden Layer
 
-            nn.Linear(embedding_size, num_classes),            
-            nn.Softmax())
+            nn.Linear(embedding_size, num_classes))
         
     def forward(self, x):
         return self.pipeline(x)

@@ -12,6 +12,7 @@ set_seed()
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 ts = datetime.datetime.now().strftime('%Y_%m_%d__%H_%M_%S')
+print(f"Using device:{device}")
 
 hyperparameters = {
         'patch_size':7,

@@ -39,6 +39,7 @@ train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=hyp
 val_dataset = dataset.mnist_test #use test for validation right now
 val_loader = torch.utils.data.DataLoader(dataset=val_dataset, batch_size=hyperparameters['batch_size'])
 
+'''
 if (hyperparameters['transformerType'] == "StandardTransformerBlock"):
     txBlock = StandardTransformerBlock
 else:
@@ -53,6 +54,19 @@ model = VisualTransformer(
     num_heads = hyperparameters['num_heads'],
     mlp_dim = hyperparameters['mlp_dim'],
     dropout  = hyperparameters['dropout'],
+)
+'''
+
+from reference import VisualTransformer2
+
+
+model = VisualTransformer2(
+    patch_size = hyperparameters['patch_size'], 
+    embedding_size = hyperparameters['embedding_size'], 
+    num_classes = hyperparameters['num_classes'],
+    num_heads = hyperparameters['num_heads'],
+    mlp_dim = hyperparameters['mlp_dim'],
+    dropout  = hyperparameters['dropout']
 )
 model.to(device)
 print('model:params', sum(p.numel() for p in model.parameters()))

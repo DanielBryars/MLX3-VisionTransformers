@@ -7,38 +7,73 @@ import math
 from weights import * 
 
 class PatchEmbedder(nn.Module):
-    def __init__(self,patch_size, embedding_size=64) -> None:
+    def __init__(self,patch_size, image_size, embedding_size) -> None:
         super().__init__()
         self.unfold = nn.Unfold(kernel_size=patch_size, stride=patch_size)
+        self.image_size = image_size
         self.linear = nn.Linear(patch_size**2, embedding_size)
+        assert image_size % patch_size == 0, "patch size must be a factor of image size"
+        self.num_patches = (image_size // patch_size) ** 2
 
-    def forward(self, x):
-        assert x.shape[1] == 1, "This implementation assumes single channel greyscale image 0-255"
+        #create some position vectors
+        
+        position_vectors = torch.empty(self.num_patches, embedding_size)
 
-        #convert to floats and rescale to 0-1
-        #to_unit_range
-        x = x.float() / 255.0
+        for patch_idx in range(self.num_patches):
+            position_vector = position_vectors[patch_idx] 
+            for embedding_component_idx in range(embedding_size):
+                angle = patch_idx / 10000 ** (embedding_component_idx/(embedding_size//2))
+                if embedding_component_idx % 2 == 0:
+                    #even
+                    position_vector[embedding_component_idx] = math.sin(angle)
+                else:
+                    position_vector[embedding_component_idx] = math.cos(angle)
 
-        #normalise so they are not so dark
+        #Can then reference this using self.position_vectors      
+        self.register_buffer("position_vectors", position_vectors)
+
+    def to_unit_range(self, x):
+        return x.float() / 255.0
+
+    def normalise(self, x):
         mnist_std = 0.3081
         mnist_mean = 0.1307
         x = (x - mnist_mean) / mnist_std
+        return x
+
+    def forward(self, x):
+        assert x.shape[1] == 1, "This implementation assumes single channel greyscale image 0-255"
+        assert x.shape[2] == self.image_size and x.shape[3] == self.image_size
+
+        #convert to floats and rescale to 0-1
+        x = self.to_unit_range(x)
+
+        #normalise so they are not so dark
+        x = self.normalise(x)
 
         #Patching        
         x = self.unfold(x)
 
+        #unfolding gives patches in last dimension
         x = x.transpose(1, 2)
         
-        #Linear Layer
+        #Forward through the Trainable Linear Layer
         x = self.linear(x)
+
+        #add a position vector onto each embedding
+        #do it in a dumb way
+        #self.position_vectors
+
+        x += self.position_vectors
 
         return x
 
 if __name__ == '__main__':
 
-    patch_size = 7
-    embedding_size= 64
-    pe = PatchEmbedder(patch_size,embedding_size)
+    patch_size = 14
+    image_size = 28
+    embedding_size= 196
+    pe = PatchEmbedder(patch_size, image_size, embedding_size)
 
     #for testing only setup the weights to "transparently" pass the image data through
     init_projection_weights(pe.linear)

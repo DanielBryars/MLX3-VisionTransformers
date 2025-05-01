@@ -6,7 +6,8 @@ class VisualTransformer(nn.Module):
     def __init__(self,patch_size, embedding_size, num_classes) -> None:
         super().__init__()
 
-        self.patch_embedder = PatchEmbedder(patch_size, embedding_size)
+        image_size = 28
+        self.patch_embedder = PatchEmbedder(patch_size, image_size, embedding_size)
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embedding_size))
         self.transformer1 = TransformerBlock(embedding_size)
         self.transformer2 = TransformerBlock(embedding_size)

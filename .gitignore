@@ -174,3 +174,4 @@ cython_debug/
 .pypirc
 *ubyte*
 wandb
+wandb

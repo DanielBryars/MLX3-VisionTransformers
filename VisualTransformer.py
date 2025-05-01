@@ -3,14 +3,23 @@ from TransformerBlock import *
 from ClassifierHead import *
 
 class VisualTransformer(nn.Module):
-    def __init__(self,patch_size, embedding_size, num_classes, num_transformer_blocks) -> None:
+    def __init__(
+            self,
+            patch_size, 
+            embedding_size,
+            num_classes, 
+            txBlock,
+            num_transformer_blocks, 
+            num_heads, 
+            mlp_dim, 
+            dropout) -> None:
         super().__init__()
 
         image_size = 28
         self.patch_embedder = PatchEmbedder(patch_size, image_size, embedding_size)
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embedding_size))
 
-        self.transformer_blocks = nn.Sequential(*[TransformerBlock(embedding_size) for _ in range(num_transformer_blocks)])
+        self.transformer_blocks = nn.Sequential(*[txBlock(embedding_size,num_heads, mlp_dim, dropout) for _ in range(num_transformer_blocks)])
         
         self.classifier_head = ClassifierHead(embedding_size, num_classes)
         

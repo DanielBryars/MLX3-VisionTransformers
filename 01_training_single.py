@@ -15,15 +15,20 @@ ts = datetime.datetime.now().strftime('%Y_%m_%d__%H_%M_%S')
 print(f"Using device:{device}")
 
 hyperparameters = {
-        'patch_size':7,
-        'embedding_size':128,
+        'patch_size':7,        
         'num_classes':10,
         'learning_rate': 3e-4,
         'weight_decay': 0.01,
         'batch_size': 256,
         'num_epochs': 5,                
         'patience': 3,
-        'num_transformer_blocks': 10
+        'num_transformer_blocks': 10,
+        'transformerType':'StandardTransformerBlock',
+        'embedding_size':1024,
+        'num_heads':10,
+        'mlp_dim':4096,
+        'dropout':0.1,
+
 }
 
 wandb.init(project='MLX7-W3-VIT-SINGLE', config=hyperparameters)
@@ -33,11 +38,21 @@ train_dataset = dataset.mnist_train
 train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=hyperparameters['batch_size'])
 val_dataset = dataset.mnist_test #use test for validation right now
 val_loader = torch.utils.data.DataLoader(dataset=val_dataset, batch_size=hyperparameters['batch_size'])
+
+if (hyperparameters['transformerType'] == "StandardTransformerBlock"):
+    txBlock = StandardTransformerBlock
+else:
+    txBlock = TransformerBlock   
+
 model = VisualTransformer(
     patch_size = hyperparameters['patch_size'], 
     embedding_size = hyperparameters['embedding_size'], 
     num_classes = hyperparameters['num_classes'],
-    num_transformer_blocks = hyperparameters['num_transformer_blocks']
+    txBlock = hyperparameters['num_classes'],
+    num_transformer_blocks = hyperparameters['num_transformer_blocks'],
+    num_heads = hyperparameters['num_heads'],
+    mlp_dim = hyperparameters['mlp_dim'],
+    dropout  = hyperparameters['dropout'],
 )
 model.to(device)
 print('model:params', sum(p.numel() for p in model.parameters()))

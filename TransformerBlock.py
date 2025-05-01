@@ -8,7 +8,7 @@ class TransformerBlock(nn.Module):
     def __init__(self, input_embedding_size=64) -> None:
         super().__init__()
         
-        self.ln = ManualLayerNorm(input_embedding_size)
+        self.ln1 = ManualLayerNorm(input_embedding_size)
         self.attn = SingleHeadSelfAttention(embedding_size=input_embedding_size, head_dim=input_embedding_size)
         self.ln2 = ManualLayerNorm(input_embedding_size)
 

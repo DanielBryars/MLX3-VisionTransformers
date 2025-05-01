@@ -3,14 +3,15 @@ from TransformerBlock import *
 from ClassifierHead import *
 
 class VisualTransformer(nn.Module):
-    def __init__(self,patch_size, embedding_size, num_classes) -> None:
+    def __init__(self,patch_size, embedding_size, num_classes, num_transformer_blocks) -> None:
         super().__init__()
 
         image_size = 28
         self.patch_embedder = PatchEmbedder(patch_size, image_size, embedding_size)
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embedding_size))
-        self.transformer1 = TransformerBlock(embedding_size)
-        self.transformer2 = TransformerBlock(embedding_size)
+
+        self.transformer_blocks = nn.Sequential(*[TransformerBlock(embedding_size) for _ in range(num_transformer_blocks)])
+        
         self.classifier_head = ClassifierHead(embedding_size, num_classes)
         
     def forward(self, x):
@@ -25,9 +26,8 @@ class VisualTransformer(nn.Module):
         x = torch.cat((cls_tokens, x), dim=1)  # x: [batch_size, num_patches+1, embedding_size]
 
         # Forward through Transformer(s)
-        x = self.transformer1(x)
-        x = self.transformer2(x)
-
+        x = self.transformer_blocks(x)
+        
         # Take only the CLS token
         cls_output = x[:, 0, :]  # shape: [batch_size, embedding_size]
 

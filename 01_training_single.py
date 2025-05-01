@@ -16,15 +16,14 @@ print(f"Using device:{device}")
 
 hyperparameters = {
         'patch_size':7,
-        'embedding_size':64,
+        'embedding_size':128,
         'num_classes':10,
-        'learning_rate': 2e-5,
+        'learning_rate': 3e-4,
         'weight_decay': 0.01,
-        'batch_size': 512,
-        'num_epochs': 5,        
-        'patch_size': 7,
-        'embedding_dim': 128,
-        'patience': 3
+        'batch_size': 256,
+        'num_epochs': 5,                
+        'patience': 3,
+        'num_transformer_blocks': 10
 }
 
 wandb.init(project='MLX7-W3-VIT-SINGLE', config=hyperparameters)
@@ -37,7 +36,8 @@ val_loader = torch.utils.data.DataLoader(dataset=val_dataset, batch_size=hyperpa
 model = VisualTransformer(
     patch_size = hyperparameters['patch_size'], 
     embedding_size = hyperparameters['embedding_size'], 
-    num_classes = hyperparameters['num_classes']
+    num_classes = hyperparameters['num_classes'],
+    num_transformer_blocks = hyperparameters['num_transformer_blocks']
 )
 model.to(device)
 print('model:params', sum(p.numel() for p in model.parameters()))

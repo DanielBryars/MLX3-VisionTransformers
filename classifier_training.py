@@ -55,6 +55,17 @@ def train_one_epoch(model, dataloader, optimizer, device, epoch, step_offset=0):
 
         wandb.log({'train/loss': loss.item()}, step=step)
         loop.set_postfix(loss=loss.item())
+
+        if step % 100 == 0:
+            probs = F.softmax(logits, dim=-1)
+            # Log the average confidence for the predicted class
+            max_probs, preds = probs.max(dim=1)
+            avg_confidence = max_probs.mean().item()
+            wandb.log({
+                'train/avg_confidence': avg_confidence,
+                'train/confidence_hist': wandb.Histogram(max_probs.cpu().numpy())
+            }, step=step)
+
         step += 1
 
     return step

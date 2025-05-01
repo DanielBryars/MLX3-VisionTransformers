@@ -22,11 +22,11 @@ hyperparameters = {
         'batch_size': 256,
         'num_epochs': 5,                
         'patience': 3,
-        'num_transformer_blocks': 10,
+        'num_transformer_blocks': 4,
         'transformerType':'StandardTransformerBlock',
-        'embedding_size':1024,
-        'num_heads':16,
-        'mlp_dim':4096,
+        'embedding_size':128,
+        'num_heads':4,
+        'mlp_dim':512,
         'dropout':0.1,
 
 }

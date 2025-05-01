@@ -16,6 +16,7 @@ class PatchEmbedder(nn.Module):
         assert x.shape[1] == 1, "This implementation assumes single channel greyscale image 0-255"
 
         #convert to floats and rescale to 0-1
+        #to_unit_range
         x = x.float() / 255.0
 
         #normalise so they are not so dark
@@ -52,7 +53,7 @@ if __name__ == '__main__':
         plt.colorbar()
         plt.show()
 
-    plot_weight_matrix(pe.linear)
+    #plot_weight_matrix(pe.linear)
 
     pe.eval()
 

@@ -16,21 +16,21 @@ class SingleHeadSelfAttention(nn.Module):
         self.W_v = nn.Linear(embedding_size, head_dim, bias=False)
 
     def forward(self, x):
-        print(f"x.shape:{x.shape}")
+        #print(f"x.shape:{x.shape}")
         Q = self.W_q(x)  # [batch, seq_len, head_dim]
         K = self.W_k(x)
         V = self.W_v(x)
 
-        print("Q = self.W_q(x)")
+        #print("Q = self.W_q(x)")
         
-        print(f"W_q.weight.shape:{self.W_q.weight.shape}")
-        print (f"W_q:{self.W_q.weight.detach().cpu().numpy()}")
+        #print(f"W_q.weight.shape:{self.W_q.weight.shape}")
+        #print (f"W_q:{self.W_q.weight.detach().cpu().numpy()}")
         
-        print(f"x.shape:{x.shape}")
-        print (f"x:{x}")
+        #print(f"x.shape:{x.shape}")
+        #print (f"x:{x}")
 
-        print(f"Q.shape:{Q.shape}")
-        print (f"Q:{Q}")
+        #print(f"Q.shape:{Q.shape}")
+        #print (f"Q:{Q}")
 
         # Transpose K: [batch, head_dim, seq_len]
         scores = torch.matmul(Q, K.transpose(-2, -1))  # [batch, seq_len, seq_len]

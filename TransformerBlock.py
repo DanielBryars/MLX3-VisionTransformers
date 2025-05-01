@@ -34,7 +34,7 @@ class TransformerBlock(nn.Module):
     
 class StandardTransformerBlock(nn.Module):
     def __init__(self, embed_dim, num_heads, mlp_dim, dropout=0.1):
-        super(TransformerBlock, self).__init__()
+        super(StandardTransformerBlock, self).__init__()
         self.norm1 = nn.LayerNorm(embed_dim)
         self.attn = nn.MultiheadAttention(embed_dim, num_heads, dropout=dropout, batch_first=True)
         self.norm2 = nn.LayerNorm(embed_dim)

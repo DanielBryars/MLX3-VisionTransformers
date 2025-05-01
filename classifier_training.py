@@ -18,6 +18,8 @@ def evaluate(model, dataloader, device, epoch=None, step=None):
     model.eval()
     
     total_loss = 0.0
+    total_correct = 0
+    total_samples = 0
     total_batches = 0
 
     loop = tqdm(dataloader, desc=f"Epoch {epoch} [Val]", leave=False)
@@ -27,31 +29,42 @@ def evaluate(model, dataloader, device, epoch=None, step=None):
 
             logits = model(images)
             loss = F.cross_entropy(logits, labels)
-
+            preds = logits.argmax(dim=1)
+            total_correct += (preds == labels).sum().item()
+            total_samples += labels.size(0)
             total_loss += loss.item()
             total_batches += 1
             loop.set_postfix(loss=loss.item())
 
     avg_loss = total_loss / total_batches if total_batches > 0 else float('nan')
+    accuracy = total_correct / total_samples if total_samples > 0 else float('nan')
+
     if step is not None:
-        wandb.log({'val/loss': avg_loss}, step=step)
-    return avg_loss
+        wandb.log({'val/loss': avg_loss, 'val/accuracy': accuracy}, step=step)
+
+    return avg_loss,accuracy
 
 def train_one_epoch(model, dataloader, optimizer, device, epoch, step_offset=0):
     model.train()
     step = step_offset
+
+    total_correct = 0
+    total_samples = 0
 
     loop = tqdm(dataloader, desc=f"Epoch {epoch} [Train]", leave=False)
     for batch in loop:
         images, labels = [x.to(device) for x in batch]
 
         logits = model(images)
-
         loss = F.cross_entropy(logits, labels)
 
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+
+        preds = logits.argmax(dim=1)
+        total_correct += (preds == labels).sum().item()
+        total_samples += labels.size(0)
 
         wandb.log({'train/loss': loss.item()}, step=step)
         loop.set_postfix(loss=loss.item())
@@ -67,6 +80,9 @@ def train_one_epoch(model, dataloader, optimizer, device, epoch, step_offset=0):
             }, step=step)
 
         step += 1
+
+    accuracy = total_correct / total_samples if total_samples > 0 else float('nan')
+    wandb.log({'train/accuracy': accuracy}, step=step - 1)
 
     return step
 

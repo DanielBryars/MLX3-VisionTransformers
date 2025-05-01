@@ -6,7 +6,7 @@ import torch.nn.init as init
 import math
 from weights import * 
 
-class PatchEmbedder(nn.Module):
+class PatchEmbedderDan(nn.Module):
     def __init__(self,patch_size, image_size, embedding_size) -> None:
         super().__init__()
         self.unfold = nn.Unfold(kernel_size=patch_size, stride=patch_size)
@@ -45,6 +45,27 @@ class PatchEmbedder(nn.Module):
         #Forward through the Trainable Linear Layer
         x = self.linear(x)
 
+        return x
+
+class PatchEmbedder(nn.Module):
+    def __init__(self, patch_size, image_size, embedding_dim):
+        super().__init__()
+        self.patch_size = patch_size
+        self.num_patches = (image_size // patch_size) ** 2
+        self.embedding_dim = embedding_dim
+
+        self.proj = nn.Conv2d(
+            in_channels=1,  # MNIST is grayscale
+            out_channels=embedding_dim,
+            kernel_size=patch_size,
+            stride=patch_size
+        )
+
+    def forward(self, x):
+        # x: [B, 1, 28, 28]
+        x = self.proj(x)  # [B, D, H', W']
+        x = x.flatten(2)  # [B, D, N]
+        x = x.transpose(1, 2)  # [B, N, D]
         return x
 
 if __name__ == '__main__':

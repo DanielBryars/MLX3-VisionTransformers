@@ -53,9 +53,9 @@ epochs_no_improve = 0
 patience= hyperparameters['patience']
 for epoch in range(1, hyperparameters['num_epochs'] + 1):
     step = train_one_epoch(model, train_loader, optimizer, device, epoch, step_offset=step)
-    val_loss = evaluate(model, val_loader, device, epoch=epoch, step=step)
+    val_loss, accuracy  = evaluate(model, val_loader, device, epoch=epoch, step=step)
 
-    print(f"Epoch {epoch} complete | Val Loss: {val_loss:.4f}")
+    print(f"Epoch {epoch} complete | Val Loss: {val_loss:.4f} | Accuracy: {accuracy:.4f}")
     if val_loss < best_val_loss:
         best_val_loss = val_loss
         epochs_no_improve = 0

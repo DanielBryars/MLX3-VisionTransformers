@@ -173,5 +173,11 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 *ubyte*
+
+
 wandb
-wandb
+*wandb*
+checkpoints
+*checkpoints*
+
+

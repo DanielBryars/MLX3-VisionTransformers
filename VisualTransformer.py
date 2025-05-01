@@ -1,6 +1,7 @@
 from PatchEmbedder import *
 from TransformerBlock import *
 from ClassifierHead import *
+from PosistionEncoder import *
 
 class VisualTransformer(nn.Module):
     def __init__(
@@ -17,6 +18,8 @@ class VisualTransformer(nn.Module):
 
         image_size = 28
         self.patch_embedder = PatchEmbedder(patch_size, image_size, embedding_size)
+
+        self.position_encoder = PosistionEncoder(patch_size, image_size, embedding_size)
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embedding_size))
 
         self.transformer_blocks = nn.Sequential(*[txBlock(embedding_size,num_heads, mlp_dim, dropout) for _ in range(num_transformer_blocks)])
@@ -25,6 +28,8 @@ class VisualTransformer(nn.Module):
         
     def forward(self, x):
         x = self.patch_embedder(x)   # x: [batch_size, num_patches, embedding_size]
+
+        x = self.position_encoder(x)
 
         batch_size = x.shape[0]
 

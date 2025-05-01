@@ -82,7 +82,7 @@ class VisualTransformer2(nn.Module):
         super().__init__()
 
         image_size = 28
-        self.patch_embedder = PatchEmbedder2(patch_size, image_size, embedding_size)
+        self.patch_embedder = PatchEmbedder(patch_size, image_size, embedding_size)
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embedding_size))
         self.pos_embed = nn.Parameter(torch.zeros(1, (image_size // patch_size)**2 + 1, embedding_size))
         self.dropout = nn.Dropout(dropout)

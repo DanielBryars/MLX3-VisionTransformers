@@ -63,7 +63,7 @@ def train_one_epoch(model, dataloader, optimizer, device, epoch, step_offset=0):
             avg_confidence = max_probs.mean().item()
             wandb.log({
                 'train/avg_confidence': avg_confidence,
-                'train/confidence_hist': wandb.Histogram(max_probs.cpu().numpy())
+                'train/confidence_hist': wandb.Histogram(max_probs.detach().cpu().numpy())
             }, step=step)
 
         step += 1

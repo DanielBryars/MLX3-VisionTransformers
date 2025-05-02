@@ -16,7 +16,7 @@ ts = datetime.datetime.now().strftime('%Y_%m_%d__%H_%M_%S')
 print(f"Using device:{device}")
 
 hyperparameters = {
-        'patch_size':8,        
+        'patch_size':14,        
         'num_classes':10,
         'learning_rate': 3e-4,
         'weight_decay': 0.01,

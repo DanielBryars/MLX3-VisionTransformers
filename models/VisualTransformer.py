@@ -23,6 +23,7 @@ class VisualTransformer(nn.Module):
         self.pos_embed = nn.Parameter(torch.zeros(1, (image_size // patch_size)**2 + 1, embedding_size))
         self.dropout = nn.Dropout(dropout)
 
+        print(f"Initialising VisualTransformer with num_transformer_blocks:{num_transformer_blocks}")
         self.transformer_blocks = nn.Sequential(
             *[TransformerBlock(embedding_size, num_heads, mlp_dim, dropout) for _ in range(num_transformer_blocks)]
         )
@@ -41,10 +42,13 @@ class VisualTransformer(nn.Module):
         x = x + self.pos_embed[:, :x.shape[1], :]
         x = self.dropout(x)
         #x = self.transformer_blocks(x)
+        i =0
         for block in self.transformer_blocks:
             if return_attn:
                 x, attn = block(x, return_attention=True)
                 self.attn_weights.append(attn)
+                i+=1
+                print(f"Forward through block:{i}")
             else:
                 x = block(x)
 

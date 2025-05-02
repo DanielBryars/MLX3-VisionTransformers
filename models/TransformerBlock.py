@@ -48,8 +48,8 @@ class TransformerBlock(nn.Module):
 
     def forward(self, x, return_attention=False):
         x_res = x
-        x = self.norm1(x)
-        x, attn_weights = self.attn(x, x, x, need_weights=return_attention)
+        x = self.norm1(x)        
+        x, attn_weights = self.attn(x, x, x, need_weights=return_attention,average_attn_weights=False)            
         x = x + x_res
 
         x_res = x

@@ -1,5 +1,6 @@
 from models.VisualTransformer import VisualTransformer
 
+
 def CreateModelFromHyperParameters(hyperparameters):
     model = VisualTransformer(
         patch_size = hyperparameters['patch_size'], 
@@ -11,8 +12,11 @@ def CreateModelFromHyperParameters(hyperparameters):
     return model
 
 def CreateModelFromCheckPoint(checkpoint):
+    print("Loading model from checkpoint")
     hyperparameters = checkpoint['hyperparameters']
     model = CreateModelFromHyperParameters(hyperparameters)
     model.load_state_dict(checkpoint["model"])
     model.eval()
+
+    print("Model Loaded")
     return model

@@ -28,7 +28,12 @@ model = CreateModelFromCheckPoint(checkpoint)
 val_dataset = dataset.mnist_test #use test for validation right now
 val_loader = torch.utils.data.DataLoader(dataset=val_dataset, batch_size=checkpoint['hyperparameters']['batch_size'])
 
-val_loss, accuracy  = evaluate(model, val_loader, 'cpu')
+print(checkpoint['hyperparameters'])
+
+#val_loss, accuracy  = evaluate(model, val_loader, 'cpu')
+
+val_loss = 0.20688627008348703
+accuracy = 0.939
 
 preprocess = T.Compose([
     T.Resize((28, 28)),
@@ -42,34 +47,30 @@ inv_preprocess = T.Compose([
 ])
 
 def visualise_attention(attn_maps, image_tensor):
-    fig, axes = plt.subplots(1, len(attn_maps[-1][0]), figsize=(4 * len(attn_maps[-1][0]), 4))
-    if len(attn_maps[-1][0]) == 1:
-        axes = [axes]
+    num_layers = len(attn_maps)
+    num_heads = attn_maps[0].shape[1]  # assume consistent across layers
 
-    for i, ax in enumerate(axes):
-        # [CLS] token attending to patches from head i
-        attn = attn_maps[-1][0, i, 0, 1:]  # shape: [num_patches]
-        grid_size = int(len(attn) ** 0.5)
+    print(f"num_layers:{num_layers},num_heads:{num_heads}")
 
-        if grid_size * grid_size != len(attn):
-            attn = F.pad(attn, (0, grid_size**2 - len(attn)))  # pad to square
-        attn_grid = attn.reshape(grid_size, grid_size).cpu()
+    fig, axes = plt.subplots(num_layers, num_heads, figsize=(4 * num_heads, 4 * num_layers))
 
-        attn_img = F.interpolate(attn_grid.unsqueeze(0).unsqueeze(0), size=(28, 28), mode='bilinear')[0, 0]
+    for layer in range(num_layers):
+        for head in range(num_heads):
+            ax = axes[layer][head] if num_layers > 1 else axes[head]
 
-        ax.imshow(image_tensor.squeeze(), cmap='gray')
-        ax.imshow(attn_img, cmap='jet', alpha=0.5)
+            # Extract CLS → patch attention
+            attn = attn_maps[layer][0, head, 0, 1:]
+            grid_size = int(len(attn) ** 0.5)
+            if grid_size * grid_size != len(attn):
+                attn = F.pad(attn, (0, grid_size**2 - len(attn)))
+            attn_grid = attn.reshape(grid_size, grid_size).cpu()
+            attn_img = F.interpolate(attn_grid.unsqueeze(0).unsqueeze(0), size=(28, 28), mode='bilinear')[0, 0]
 
-        tick_positions = [28 / grid_size * (j + 0.5) for j in range(grid_size)]
-        tick_labels = list(range(grid_size))
-        ax.set_xticks(tick_positions)
-        ax.set_xticklabels(tick_labels)
-        ax.set_yticks(tick_positions)
-        ax.set_yticklabels(tick_labels)
-
-        ax.set_xlabel("Patch column")
-        ax.set_ylabel("Patch row")
-        ax.set_title(f"Head {i}")
+            ax.imshow(image_tensor.squeeze(), cmap='gray')
+            ax.imshow(attn_img, cmap='jet', alpha=0.5)
+            ax.set_title(f"Layer {layer}, Head {head}")
+            ax.set_xticks([])
+            ax.set_yticks([])
 
     fig.tight_layout()
     buf = io.BytesIO()
@@ -77,7 +78,6 @@ def visualise_attention(attn_maps, image_tensor):
     plt.close(fig)
     buf.seek(0)
     return Image.open(buf)
-
 
 def visualise_prediction_confidence(output):
     probs = torch.softmax(output, dim=1)[0].cpu().numpy()

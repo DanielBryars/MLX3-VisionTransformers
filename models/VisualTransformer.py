@@ -1,7 +1,7 @@
-from PatchEmbedder import *
-from TransformerBlock import *
-from ClassifierHead import *
-from PosistionEncoder import *
+from models.PatchEmbedder import *
+from models.TransformerBlock import *
+from models.ClassifierHead import *
+from models.PosistionEncoder import *
 
 class VisualTransformer(nn.Module):
     def __init__(
@@ -26,7 +26,7 @@ class VisualTransformer(nn.Module):
         
         self.classifier_head = ClassifierHead(embedding_size, num_classes)
         
-    def forward(self, x):
+    def forward(self, x, return_attention=False):
         x = self.patch_embedder(x)   # x: [batch_size, num_patches, embedding_size]
 
         x = self.position_encoder(x)
@@ -40,6 +40,8 @@ class VisualTransformer(nn.Module):
         x = torch.cat((cls_tokens, x), dim=1)  # x: [batch_size, num_patches+1, embedding_size]
 
         # Forward through Transformer(s)
+
+
         x = self.transformer_blocks(x)
         
         # Take only the CLS token

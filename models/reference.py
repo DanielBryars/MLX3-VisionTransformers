@@ -64,9 +64,9 @@ class ClassifierHead2(nn.Module):
 
 import torch
 import torch.nn as nn
-from PatchEmbedder import PatchEmbedder
-from TransformerBlock import TransformerBlock
-from ClassifierHead import ClassifierHead
+from models.PatchEmbedder import PatchEmbedder
+from models.TransformerBlock import TransformerBlock
+from models.ClassifierHead import ClassifierHead
 
 class VisualTransformer2(nn.Module):
     def __init__(

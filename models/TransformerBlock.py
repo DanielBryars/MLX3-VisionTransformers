@@ -1,8 +1,8 @@
 from dataset import *
 import torch.nn as nn
 import torch.nn.functional as F
-from ManualLayerNorm import ManualLayerNorm
-from SingleHeadSelfAttention import SingleHeadSelfAttention
+from models.ManualLayerNorm import ManualLayerNorm
+from models.SingleHeadSelfAttention import SingleHeadSelfAttention
 
 class TransformerBlock(nn.Module):
     def __init__(self, embed_dim, num_heads, mlp_dim, dropout=0.1) -> None:

@@ -5,7 +5,7 @@ import torch
 import wandb
 import torch
 import dataset
-from VisualTransformer import *
+from models.VisualTransformer import *
 from classifier_training import *
 
 set_seed()

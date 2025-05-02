@@ -16,3 +16,4 @@ uvicorn
 torchvision
 matplotlib
 seaborn
+gradio

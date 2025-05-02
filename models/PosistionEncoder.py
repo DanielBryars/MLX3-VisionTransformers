@@ -1,6 +1,6 @@
-from ClassifierHead import nn, torch
-from PatchEmbedder import math, nn, torch
-from TransformerBlock import nn
+from models.ClassifierHead import nn, torch
+from models.PatchEmbedder import math, nn, torch
+from models.TransformerBlock import nn
 
 
 class PosistionEncoder(nn.Module):

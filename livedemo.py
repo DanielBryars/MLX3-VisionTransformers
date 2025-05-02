@@ -93,15 +93,6 @@ def classify_and_show_attention(image_dict):
     attention_heatmap = visualise_attention(attn_maps, image_tensor)
     return f"Predicted: {pred}",model_input_image, confidence_plot, attention_heatmap 
 
-# --- Launch the interface with Sketchpad ---
-interface = gr.Interface(
-    fn=classify_and_show_attention,
-    inputs=gr.Sketchpad(canvas_size=(280, 280), brush=10),
-    outputs=[gr.Text(), gr.Image(label="Model Input"), gr.Image(label="Confidence Plot"), gr.Image(label="Attention")],
-    title="Vision Transformer Attention Explorer",
-    description=f"Draw a digit and see what the ViT model attends to. This model val_loss:{val_loss}, accuracy:{accuracy}"
-)
-
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         checkpoint_path = sys.argv[1]
@@ -122,5 +113,13 @@ if __name__ == '__main__':
 
     #val_loss = 0.20688627008348703
     #accuracy = 0.939
+
+    interface = gr.Interface(
+        fn=classify_and_show_attention,
+        inputs=gr.Sketchpad(canvas_size=(280, 280), brush=10),
+        outputs=[gr.Text(), gr.Image(label="Model Input"), gr.Image(label="Confidence Plot"), gr.Image(label="Attention")],
+        title="Vision Transformer Attention Explorer",
+        description=f"Draw a digit and see what the ViT model attends to. This model val_loss:{val_loss}, accuracy:{accuracy}"
+    )
 
     interface.launch(share=True)

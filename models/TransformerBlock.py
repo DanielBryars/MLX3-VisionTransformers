@@ -46,14 +46,18 @@ class TransformerBlock(nn.Module):
             nn.Dropout(dropout),
         )
 
-    def forward(self, x):
+    def forward(self, x, return_attention=False):
         x_res = x
         x = self.norm1(x)
-        x, _ = self.attn(x, x, x)
+        x, attn_weights = self.attn(x, x, x, need_weights=return_attention)
         x = x + x_res
 
         x_res = x
         x = self.norm2(x)
         x = self.mlp(x)
         x = x + x_res
+
+        if return_attention:
+            return x, attn_weights
+        
         return x

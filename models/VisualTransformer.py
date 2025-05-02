@@ -16,6 +16,7 @@ class VisualTransformer(nn.Module):
     ):
         super().__init__()
 
+        self.attn_weights = []
         image_size = 28
         self.patch_embedder = PatchEmbedder(patch_size, image_size, embedding_size)
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embedding_size))
@@ -32,14 +33,21 @@ class VisualTransformer(nn.Module):
         nn.init.trunc_normal_(self.pos_embed, std=0.02)
         nn.init.trunc_normal_(self.cls_token, std=0.02)
 
-    def forward(self, x):
+    def forward(self, x, return_attn=False):
         x = self.patch_embedder(x)
         B = x.shape[0]
         cls_tokens = self.cls_token.expand(B, -1, -1)
         x = torch.cat((cls_tokens, x), dim=1)
         x = x + self.pos_embed[:, :x.shape[1], :]
         x = self.dropout(x)
-        x = self.transformer_blocks(x)
+        #x = self.transformer_blocks(x)
+        for block in self.transformer_blocks:
+            if return_attn:
+                x, attn = block(x, return_attention=True)
+                self.attn_weights.append(attn)
+            else:
+                x = block(x)
+
         x = self.norm(x)
         return self.classifier_head(x[:, 0])
 

@@ -26,7 +26,7 @@ hyperparameters = {
         'num_transformer_blocks': 1,
         'transformerType':'StandardTransformerBlock',
         'embedding_size':16,
-        'num_heads':1,
+        'num_heads':2,
         'mlp_dim':64,
         'dropout':0.1,
 }

@@ -42,40 +42,42 @@ inv_preprocess = T.Compose([
 ])
 
 def visualise_attention(attn_maps, image_tensor):
-    attn = attn_maps[-1][0, 0, :]  # Dummy: [CLS] to tokens
-    grid_size = int(len(attn) ** 0.5)
-    if grid_size * grid_size != len(attn):
-        grid_size += 1  # pad if necessary
-        attn = F.pad(attn, (0, grid_size**2 - len(attn)))
+    fig, axes = plt.subplots(1, len(attn_maps[-1][0]), figsize=(4 * len(attn_maps[-1][0]), 4))
+    if len(attn_maps[-1][0]) == 1:
+        axes = [axes]
 
-    attn_grid = attn.reshape(grid_size, grid_size).cpu()
-    attn_img = F.interpolate(attn_grid.unsqueeze(0).unsqueeze(0), size=(28, 28), mode='bilinear')[0,0]
+    for i, ax in enumerate(axes):
+        # [CLS] token attending to patches from head i
+        attn = attn_maps[-1][0, i, 0, 1:]  # shape: [num_patches]
+        grid_size = int(len(attn) ** 0.5)
 
-    fig, ax = plt.subplots()
-    ax.imshow(image_tensor.squeeze(), cmap='gray')
-    ax.imshow(attn_img, cmap='jet', alpha=0.5)
+        if grid_size * grid_size != len(attn):
+            attn = F.pad(attn, (0, grid_size**2 - len(attn)))  # pad to square
+        attn_grid = attn.reshape(grid_size, grid_size).cpu()
 
-    num_patches_per_side = int(attn_grid.shape[0])
+        attn_img = F.interpolate(attn_grid.unsqueeze(0).unsqueeze(0), size=(28, 28), mode='bilinear')[0, 0]
 
-    # Set ticks at the centre of each patch
-    tick_positions = [28 / num_patches_per_side * (i + 0.5) for i in range(num_patches_per_side)]
-    tick_labels = list(range(num_patches_per_side))
+        ax.imshow(image_tensor.squeeze(), cmap='gray')
+        ax.imshow(attn_img, cmap='jet', alpha=0.5)
 
-    ax.set_xticks(tick_positions)
-    ax.set_xticklabels(tick_labels)
-    ax.set_yticks(tick_positions)
-    ax.set_yticklabels(tick_labels)
+        tick_positions = [28 / grid_size * (j + 0.5) for j in range(grid_size)]
+        tick_labels = list(range(grid_size))
+        ax.set_xticks(tick_positions)
+        ax.set_xticklabels(tick_labels)
+        ax.set_yticks(tick_positions)
+        ax.set_yticklabels(tick_labels)
 
-    ax.set_xlabel("Patch column")
-    ax.set_ylabel("Patch row")
+        ax.set_xlabel("Patch column")
+        ax.set_ylabel("Patch row")
+        ax.set_title(f"Head {i}")
 
-    #ax.axis('off')
-    fig.tight_layout(pad=0)
+    fig.tight_layout()
     buf = io.BytesIO()
     fig.savefig(buf, format='png')
     plt.close(fig)
     buf.seek(0)
     return Image.open(buf)
+
 
 def visualise_prediction_confidence(output):
     probs = torch.softmax(output, dim=1)[0].cpu().numpy()

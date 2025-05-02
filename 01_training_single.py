@@ -57,10 +57,7 @@ model = VisualTransformer(
 )
 '''
 
-from models.reference import VisualTransformer2
-
-
-model = VisualTransformer2(
+model = VisualTransformer(
     patch_size = hyperparameters['patch_size'], 
     embedding_size = hyperparameters['embedding_size'], 
     num_classes = hyperparameters['num_classes'],

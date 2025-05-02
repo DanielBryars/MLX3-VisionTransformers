@@ -1,8 +1,8 @@
 from dataset import *
 import torch.nn as nn
-from weights import * 
+from models.weights import * 
 
-class ClassifierHead(nn.Module):
+class DjbClassifierHead(nn.Module):
 
     def __init__(self,embedding_size, num_classes=10) -> None:
         super().__init__()
@@ -23,3 +23,11 @@ class ClassifierHead(nn.Module):
         
     def forward(self, x):
         return self.pipeline(x)
+    
+class ClassifierHead(nn.Module):
+    def __init__(self, embed_dim, num_classes):
+        super().__init__()
+        self.linear = nn.Linear(embed_dim, num_classes)
+
+    def forward(self, x):
+        return self.linear(x)

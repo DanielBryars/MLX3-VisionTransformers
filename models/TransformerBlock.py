@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from models.ManualLayerNorm import ManualLayerNorm
 from models.SingleHeadSelfAttention import SingleHeadSelfAttention
 
-class TransformerBlock(nn.Module):
+class DjbTransformerBlock(nn.Module):
     def __init__(self, embed_dim, num_heads, mlp_dim, dropout=0.1) -> None:
         super().__init__()
         
@@ -32,30 +32,28 @@ class TransformerBlock(nn.Module):
 
         return x
     
-class StandardTransformerBlock(nn.Module):
+class TransformerBlock(nn.Module):
     def __init__(self, embed_dim, num_heads, mlp_dim, dropout=0.1):
-        super(StandardTransformerBlock, self).__init__()
+        super().__init__()
         self.norm1 = nn.LayerNorm(embed_dim)
         self.attn = nn.MultiheadAttention(embed_dim, num_heads, dropout=dropout, batch_first=True)
         self.norm2 = nn.LayerNorm(embed_dim)
-
         self.mlp = nn.Sequential(
             nn.Linear(embed_dim, mlp_dim),
             nn.GELU(),
             nn.Dropout(dropout),
             nn.Linear(mlp_dim, embed_dim),
-            nn.Dropout(dropout)
+            nn.Dropout(dropout),
         )
 
     def forward(self, x):
-        # x shape: [batch_size, seq_len, embed_dim]
-        # Attention block
-        x_norm = self.norm1(x)
-        attn_output, _ = self.attn(x_norm, x_norm, x_norm)
-        x = x + attn_output  # residual connection
+        x_res = x
+        x = self.norm1(x)
+        x, _ = self.attn(x, x, x)
+        x = x + x_res
 
-        # MLP block
-        x_norm = self.norm2(x)
-        x = x + self.mlp(x_norm)  # another residual connection
-
+        x_res = x
+        x = self.norm2(x)
+        x = self.mlp(x)
+        x = x + x_res
         return x

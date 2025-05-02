@@ -4,9 +4,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
 import math
-from weights import * 
+from models.weights import * 
 
-class PatchEmbedderDan(nn.Module):
+class DjbPatchEmbedder(nn.Module):
     def __init__(self,patch_size, image_size, embedding_size) -> None:
         super().__init__()
         self.unfold = nn.Unfold(kernel_size=patch_size, stride=patch_size)

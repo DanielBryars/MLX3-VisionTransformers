@@ -16,16 +16,16 @@ ts = datetime.datetime.now().strftime('%Y_%m_%d__%H_%M_%S')
 print(f"Using device:{device}")
 
 hyperparameters = {
-        'patch_size':14,        
+        'patch_size':7,        
         'num_classes':10,
         'learning_rate': 3e-4,
         'weight_decay': 0.01,
         'batch_size': 512,
         'num_epochs': 10,                
         'patience': 3,
-        'num_transformer_blocks': 4,
+        'num_transformer_blocks': 1,
         'transformerType':'StandardTransformerBlock',
-        'embedding_size':2,
+        'embedding_size':3,
         'num_heads':1,
         'mlp_dim':64,
         'dropout':0.1,

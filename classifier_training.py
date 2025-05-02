@@ -86,7 +86,7 @@ def train_one_epoch(model, dataloader, optimizer, device, epoch, step_offset=0):
 
     return step
 
-def save_checkpoint(model, epoch, ts):
+def save_checkpoint(model, hyperparameters, epoch, ts):
     checkpoint_dir = './checkpoints'
     os.makedirs(checkpoint_dir, exist_ok=True)
 
@@ -98,6 +98,7 @@ def save_checkpoint(model, epoch, ts):
     torch.save({
         'model': model.state_dict(),
         'epoch': epoch,
+        'hyperparameters': hyperparameters
     }, checkpoint_path)
 
     # Create wandb artifact and log it

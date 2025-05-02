@@ -5,6 +5,7 @@ import torch
 import wandb
 import torch
 import dataset
+from models.ModelFactory import *
 from models.VisualTransformer import *
 from classifier_training import *
 
@@ -28,7 +29,6 @@ hyperparameters = {
         'num_heads':4,
         'mlp_dim':512,
         'dropout':0.1,
-
 }
 
 wandb.init(project='MLX7-W3-VIT-SINGLE', config=hyperparameters)
@@ -39,32 +39,7 @@ train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=hyp
 val_dataset = dataset.mnist_test #use test for validation right now
 val_loader = torch.utils.data.DataLoader(dataset=val_dataset, batch_size=hyperparameters['batch_size'])
 
-'''
-if (hyperparameters['transformerType'] == "StandardTransformerBlock"):
-    txBlock = StandardTransformerBlock
-else:
-    txBlock = TransformerBlock   
-
-model = VisualTransformer(
-    patch_size = hyperparameters['patch_size'], 
-    embedding_size = hyperparameters['embedding_size'], 
-    num_classes = hyperparameters['num_classes'],
-    txBlock = txBlock,
-    num_transformer_blocks = hyperparameters['num_transformer_blocks'],
-    num_heads = hyperparameters['num_heads'],
-    mlp_dim = hyperparameters['mlp_dim'],
-    dropout  = hyperparameters['dropout'],
-)
-'''
-
-model = VisualTransformer(
-    patch_size = hyperparameters['patch_size'], 
-    embedding_size = hyperparameters['embedding_size'], 
-    num_classes = hyperparameters['num_classes'],
-    num_heads = hyperparameters['num_heads'],
-    mlp_dim = hyperparameters['mlp_dim'],
-    dropout  = hyperparameters['dropout']
-)
+model = CreateModelFromHyperParameters(hyperparameters)
 model.to(device)
 print('model:params', sum(p.numel() for p in model.parameters()))
 
@@ -85,7 +60,7 @@ for epoch in range(1, hyperparameters['num_epochs'] + 1):
     if val_loss < best_val_loss:
         best_val_loss = val_loss
         epochs_no_improve = 0
-        save_checkpoint(model, epoch, ts)
+        save_checkpoint(model, hyperparameters, epoch, ts)
     else:
         epochs_no_improve += 1
         print(f"No improvement. Early stop patience: {epochs_no_improve}/{patience}")

@@ -94,7 +94,7 @@ def train():
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
                 epochs_no_improve = 0
-                save_checkpoint(model, epoch, ts)
+                save_checkpoint(model, hyperparameters, epoch, ts)
             else:
                 epochs_no_improve += 1
                 print(f"No improvement. Early stop patience: {epochs_no_improve}/{patience}")

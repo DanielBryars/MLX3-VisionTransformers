@@ -6,13 +6,13 @@ from models.PosistionEncoder import *
 class VisualTransformer(nn.Module):
     def __init__(
         self,
-        patch_size=4,
-        embedding_size=256,
-        num_classes=10,
-        num_transformer_blocks=6,
-        num_heads=8,
-        mlp_dim=512,
-        dropout=0.1
+        patch_size=None,
+        embedding_size=None,
+        num_classes=None,
+        num_transformer_blocks=None,
+        num_heads=None,
+        mlp_dim=None,
+        dropout=None
     ):
         super().__init__()
 

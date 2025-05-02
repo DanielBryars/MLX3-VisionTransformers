@@ -1,3 +1,4 @@
+import sys
 import torch
 import torch.nn.functional as F
 import torchvision.transforms as T
@@ -12,28 +13,6 @@ from models.VisualTransformer import VisualTransformer
 
 import torch
 
-#import wandb
-#run = wandb.init(project="MLX7-W3-VIT-SINGLE")
-#artifact = run.use_artifact('bryars-bryars/MLX7-W3-VIT-SINGLE/ts.2025_05_02__10_31_48.epoch.6.VisualTransformer:v0', type='model')
-#artifact_dir = artifact.download()
-
-# Path to the checkpoint file inside the artifact
-checkpoint_path = f"artifacts/ts.2025_05_02__10_31_48.epoch.6.VisualTransformer.pth"
-
-# Load into your model
-checkpoint = torch.load(checkpoint_path, map_location='cpu')
-
-model = CreateModelFromCheckPoint(checkpoint)
-
-val_dataset = dataset.mnist_test #use test for validation right now
-val_loader = torch.utils.data.DataLoader(dataset=val_dataset, batch_size=checkpoint['hyperparameters']['batch_size'])
-
-print(checkpoint['hyperparameters'])
-
-#val_loss, accuracy  = evaluate(model, val_loader, 'cpu')
-
-val_loss = 0.20688627008348703
-accuracy = 0.939
 
 preprocess = T.Compose([
     T.Resize((28, 28)),
@@ -124,4 +103,24 @@ interface = gr.Interface(
 )
 
 if __name__ == '__main__':
+    if len(sys.argv) > 1:
+        checkpoint_path = sys.argv[1]
+    else:
+        checkpoint_path = f"artifacts/ts.2025_05_02__10_31_48.epoch.6.VisualTransformer.pth"
+
+    # Load into your model
+    checkpoint = torch.load(checkpoint_path, map_location='cpu')
+
+    model = CreateModelFromCheckPoint(checkpoint)
+
+    val_dataset = dataset.mnist_test #use test for validation right now
+    val_loader = torch.utils.data.DataLoader(dataset=val_dataset, batch_size=checkpoint['hyperparameters']['batch_size'])
+
+    print(checkpoint['hyperparameters'])
+
+    #val_loss, accuracy  = evaluate(model, val_loader, 'cpu')
+
+    val_loss = 0.20688627008348703
+    accuracy = 0.939
+
     interface.launch(share=True)

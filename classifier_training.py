@@ -95,6 +95,7 @@ def save_checkpoint(model, hyperparameters, epoch, ts):
     checkpoint_name = f'{descriptive_name}.pth'
     checkpoint_path = os.path.join(checkpoint_dir, checkpoint_name)
 
+    print(f"Saving '{checkpoint_path}'")
     torch.save({
         'model': model.state_dict(),
         'epoch': epoch,

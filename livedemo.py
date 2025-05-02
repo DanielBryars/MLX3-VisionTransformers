@@ -118,9 +118,9 @@ if __name__ == '__main__':
 
     print(checkpoint['hyperparameters'])
 
-    #val_loss, accuracy  = evaluate(model, val_loader, 'cpu')
+    val_loss, accuracy  = evaluate(model, val_loader, 'cpu')
 
-    val_loss = 0.20688627008348703
-    accuracy = 0.939
+    #val_loss = 0.20688627008348703
+    #accuracy = 0.939
 
     interface.launch(share=True)

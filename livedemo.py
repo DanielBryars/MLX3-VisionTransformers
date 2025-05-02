@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import gradio as gr
 from PIL import Image
 import io
+from classifier_training import evaluate
+import dataset
 from models.ModelFactory import CreateModelFromCheckPoint
 from models.VisualTransformer import VisualTransformer
 
@@ -23,10 +25,20 @@ checkpoint = torch.load(checkpoint_path, map_location='cpu')
 
 model = CreateModelFromCheckPoint(checkpoint)
 
+val_dataset = dataset.mnist_test #use test for validation right now
+val_loader = torch.utils.data.DataLoader(dataset=val_dataset, batch_size=checkpoint['hyperparameters']['batch_size'])
+
+val_loss, accuracy  = evaluate(model, val_loader, 'cpu')
+
 preprocess = T.Compose([
     T.Resize((28, 28)),
     T.ToTensor(),
     T.Normalize((0.1307,), (0.3081,))
+])
+
+inv_preprocess = T.Compose([
+    T.Normalize(mean=[-0.1307 / 0.3081], std=[1 / 0.3081]),
+    T.ToPILImage()
 ])
 
 def visualise_attention(attn_maps, image_tensor):
@@ -42,7 +54,22 @@ def visualise_attention(attn_maps, image_tensor):
     fig, ax = plt.subplots()
     ax.imshow(image_tensor.squeeze(), cmap='gray')
     ax.imshow(attn_img, cmap='jet', alpha=0.5)
-    ax.axis('off')
+
+    num_patches_per_side = int(attn_grid.shape[0])
+
+    # Set ticks at the centre of each patch
+    tick_positions = [28 / num_patches_per_side * (i + 0.5) for i in range(num_patches_per_side)]
+    tick_labels = list(range(num_patches_per_side))
+
+    ax.set_xticks(tick_positions)
+    ax.set_xticklabels(tick_labels)
+    ax.set_yticks(tick_positions)
+    ax.set_yticklabels(tick_labels)
+
+    ax.set_xlabel("Patch column")
+    ax.set_ylabel("Patch row")
+
+    #ax.axis('off')
     fig.tight_layout(pad=0)
     buf = io.BytesIO()
     fig.savefig(buf, format='png')
@@ -74,13 +101,16 @@ def classify_and_show_attention(image_dict):
     image_bytes = image_dict["composite"]
     image = Image.fromarray(image_bytes).convert('L')
     image_tensor = preprocess(image)
+
+    model_input_image = inv_preprocess(image_tensor.cpu())
+
     with torch.no_grad():
         output = model(image_tensor.unsqueeze(0), return_attn=True)
     pred = output.argmax(dim=1).item()
     confidence_plot = visualise_prediction_confidence(output)
     attn_maps = model.attn_weights
     attention_heatmap = visualise_attention(attn_maps, image_tensor)
-    return f"Predicted: {pred}",image_tensor.ToPILImage(), confidence_plot, attention_heatmap 
+    return f"Predicted: {pred}",model_input_image, confidence_plot, attention_heatmap 
 
 # --- Launch the interface with Sketchpad ---
 interface = gr.Interface(
@@ -88,7 +118,7 @@ interface = gr.Interface(
     inputs=gr.Sketchpad(canvas_size=(280, 280), brush=10),
     outputs=[gr.Text(), gr.Image(label="Model Input"), gr.Image(label="Confidence Plot"), gr.Image(label="Attention")],
     title="Vision Transformer Attention Explorer",
-    description="Draw a digit and see what the ViT model attends to."
+    description=f"Draw a digit and see what the ViT model attends to. This model val_loss:{val_loss}, accuracy:{accuracy}"
 )
 
 if __name__ == '__main__':

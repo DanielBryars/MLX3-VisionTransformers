@@ -23,7 +23,7 @@ hyperparameters = {
         'batch_size': 512,
         'num_epochs': 10,                
         'patience': 3,
-        'num_transformer_blocks': 1,
+        'num_transformer_blocks': 2,
         'transformerType':'StandardTransformerBlock',
         'embedding_size':16,
         'num_heads':2,

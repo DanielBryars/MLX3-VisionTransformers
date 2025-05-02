@@ -66,7 +66,7 @@ def visualise_attention(attn_maps, image_tensor):
             attn_grid = attn.reshape(grid_size, grid_size).cpu()
             attn_img = F.interpolate(attn_grid.unsqueeze(0).unsqueeze(0), size=(28, 28), mode='bilinear')[0, 0]
 
-            ax.imshow(image_tensor.squeeze(), cmap='gray')
+            #ax.imshow(image_tensor.squeeze(), cmap='gray')
             ax.imshow(attn_img, cmap='jet', alpha=0.5)
             ax.set_title(f"Layer {layer}, Head {head}")
             ax.set_xticks([])
